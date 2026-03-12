@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0015">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Sultan47</title>
+
+  <!-- Manifest inline -->
+  <link rel="manifest" href="data:application/manifest+json,{
+    'name':'EAGLEBELAC','short_name':'Eaglebelac','description':'Audio-reactive visualizer PWA',
+    'start_url':'/','display':'standalone','background_color':'#000','theme_color':'#ff0044',
+    'orientation':'portrait-primary','icons':[
+      {'src':'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2240%22 fill=%22%23ff0044%22/></svg>','sizes':'192x192','type':'image/svg+xml','purpose':'any maskable'},
+      {'src':'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22><circle cx=%22256%22 cy=%22256%22 r=%22220%22 fill=%22%23ff0044%22/></svg>','sizes':'512x512','type':'image/svg+xml','purpose':'any maskable'}
+    ]
+  }">
+
+  <style>
+    :root{--p:#ff0044;--g:#8a2be2;--b:#0a0015}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      height:100vh;background:var(--b);color:#eee;font-family:monospace;
+      overflow:hidden;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+    }
+    #bg{
+      position:absolute;inset:0;background-size:cover;background-position:center;
+      opacity:0.75;transition:background-image 1.6s ease,opacity 0.6s;
+      will-change:background-image,opacity;transform:translateZ(0);
+    }
+    #c{
+      position:absolute;inset:0;pointer-events:none;will-change:transform;
+      transform:translateZ(0);image-rendering:crisp-edges;
+    }
+    #ui{
+      position:absolute;bottom:0;left:0;right:0;height:90px;
+      display:flex;justify-content:space-around;align-items:center;
+      background:linear-gradient(to top,rgba(0,0,0,0.9),rgba(0,0,0,0.4));
+      backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+      border-top:3px solid var(--p);z-index:10;
+    }
+    .btn{
+      width:52px;height:52px;border-radius:50%;border:6px solid var(--p);
+      background:rgba(10,0,20,0.7);color:#fff;font-size:1.5rem;
+      cursor:pointer;transition:0.18s;touch-action:manipulation;
+    }
+    .btn:active{transform:scale(0.88);box-shadow:0 0 20px var(--p);}
+    #vis{
+      position:absolute;inset:0;pointer-events:none;opacity:0.85;
+      mix-blend-mode:screen;will-change:transform;
+    }
+  </style>
+</head>
+<body>
+  <div id="bg"></div>
+  <canvas id="c"></canvas>
+  <canvas id="vis"></canvas>
+  <div id="ui">
+    <button class="btn" id="prev">👈</button>
+    <button class="btn" id="play">👻</button>
+    <button class="btn" id="next">👉</button>
+    <button class="btn" id="col">🌶️</button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- Vertex Shader -->
+  <script id="v" type="x-shader/x-vertex">
+    varying vec2 vUv;
+    uniform float t;
+    void main(){
+      vUv=uv;
+      vec3 p=position;
+      p+=normal*sin(t*1.8+position.y*0.6)*0.22;
+      gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.);
+    }
+  </script>
+
+  <!-- Fragment Shader (optimized) -->
+  <script id="f" type="x-shader/x-fragment">
+    uniform float t,glow,bass,mid,high;
+    uniform sampler2D tex;
+    varying vec2 vUv;
+    void main(){
+      vec2 uv=vUv;
+      uv.x+=sin(t*2.1+uv.y*9.)*0.007*mid;
+      uv.y+=cos(t*1.7+uv.x*11.)*0.005*high;
+      vec4 c=texture2D(tex,uv);
+      vec3 col=c.rgb+vec3(bass*0.38,mid*0.28,high*0.45);
+      col=clamp(col*1.15,0.,1.3);
+      float fall=1.-smoothstep(0.1,0.9,length(vUv-0.5)*1.7);
+      gl_FragColor=vec4(col*(glow*fall),c.a*fall*0.95);
+    }
+  </script>
+
+  <script>
+    // ────────────────────────────────────────────────
+    // Sultan47 • FULL PWA • MOBILE OPTIMIZED
+    // ────────────────────────────────────────────────
+
+    const tracks=['1.mp3','2.mp3','3.mp3','4.mp3','5.mp3'];
+    const bgs=[
+      ['assets/bg/1.jpeg','assets/bg/11.jpeg','assets/bg/111.jpeg','assets/bg/1111.jpeg','assets/bg/11111.jpeg'],
+      ['assets/bg/2.jpeg','assets/bg/22.jpeg','assets/bg/222.jpeg','assets/bg/2222.jpeg','assets/bg/22222.jpeg'],
+      ['assets/bg/3.jpeg','assets/bg/33.jpeg','assets/bg/333.jpeg','assets/bg/3333.jpeg','assets/bg/33333.jpeg'],
+      ['assets/bg/4.jpeg','assets/bg/44.jpeg','assets/bg/444.jpeg','assets/bg/4444.jpeg','assets/bg/44444.jpeg'],
+      ['assets/bg/5.jpeg','assets/bg/55.jpeg','assets/bg/555.jpeg','assets/bg/5555.jpeg','assets/bg/55555.jpeg']
+    ];
+    const cores=[
+      ['assets/core/a.jpeg','assets/core/aa.jpeg','assets/core/aaa.jpeg','assets/core/aaaa.jpeg','assets/core/aaaaa.jpeg'],
+      ['assets/core/b.jpeg','assets/core/bb.jpeg','assets/core/bbb.jpeg','assets/core/bbbb.jpeg','assets/core/bbbbb.jpeg'],
+      ['assets/core/c.jpeg','assets/core/cc.jpeg','assets/core/ccc.jpeg','assets/core/cccc.jpeg','assets/core/ccccc.jpeg'],
+      ['assets/core/d.jpeg','assets/core/dd.jpeg','assets/core/ddd.jpeg','assets/core/dddd.jpeg','assets/core/ddddd.jpeg'],
+      ['assets/core/e.jpeg','assets/core/ee.jpeg','assets/core/eee.jpeg','assets/core/eeee.jpeg','assets/core/eeeee.jpeg']
+    ];
+
+    let tIdx=0, bgIdx=0, audio, audioCtx, analyser, source;
+    let lastFlux=0, fluxHist=[], onsetTime=0;
+    let scene,camera,renderer,core,visCtx=vis.getContext('2d');
+
+    const loader=new THREE.TextureLoader();
+    loader.setCrossOrigin('anonymous');
+
+    // ─── PWA / Service Worker inline ───────────────────────────────
+    if('serviceWorker'in navigator){
+      navigator.serviceWorker.register(URL.createObjectURL(new Blob([`
+        const CACHE='eaglebelac-pwa-v1';
+        const ASSETS=['./','${location.pathname}','https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'];
+        self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
+        self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
+        self.addEventListener('fetch',e=>{
+          e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(n=>{
+            if(n&&n.status===200)caches.open(CACHE).then(c=>c.put(e.request,n.clone()));
+            return n;
+          }).catch(()=>caches.match('./'))));
+        });
+      `],{type:'application/javascript'})));
+    }
+
+    // ─── Three.js core ─────────────────────────────────────────────
+    scene=new THREE.Scene();
+    camera=new THREE.PerspectiveCamera(75,1,0.1,300);
+    renderer=new THREE.WebGLRenderer({canvas:c,antialias:true,powerPreference:"low-power"});
+    renderer.setClearColor(0,0);
+
+    const uniforms={
+      t:{value:0},glow:{value:1.6},tex:{value:null},
+      bass:{value:0},mid:{value:0},high:{value:0}
+    };
+
+    core=new THREE.Mesh(
+      new THREE.SphereGeometry(18,64,48),
+      new THREE.ShaderMaterial({
+        uniforms,
+        vertexShader:document.getElementById('v').textContent,
+        fragmentShader:document.getElementById('f').textContent,
+        transparent:true
+      })
+    );
+    scene.add(core);
+    camera.position.z=70;
+
+    function resize(){
+      const w=innerWidth,h=innerHeight;
+      camera.aspect=w/h;camera.updateProjectionMatrix();
+      renderer.setSize(w,h);renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));
+      vis.width=w;vis.height=h;
+    }
+    addEventListener('resize',resize);resize();
+
+    // ─── Audio & Beat Detection ────────────────────────────────────
+    async function initAudio(){
+      if(!audioCtx){
+        audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+        analyser=audioCtx.createAnalyser();
+        analyser.fftSize=1024;
+        analyser.smoothingTimeConstant=0.82;
+      }
+      if(audioCtx.state==='suspended')await audioCtx.resume();
+    }
+
+    function switchTrack(d=0){
+      initAudio().then(()=>{
+        if(audio){audio.pause();audio.currentTime=0;}
+        if(source)source.disconnect();
+
+        tIdx=(tIdx+d+5)%5;
+        audio=new Audio(tracks[tIdx]);
+        source=audioCtx.createMediaElementSource(audio);
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+
+        audio.currentTime=0;
+        audio.play().catch(e=>console.log(e));
+        document.getElementById('play').textContent='PAUSE';
+
+        loader.load(cores[tIdx][0],tex=>{
+          tex.flipY=false;tex.encoding=THREE.sRGBEncoding;
+          uniforms.tex.value=tex;core.material.needsUpdate=true;
+        });
+
+        bgIdx=0;
+        document.getElementById('bg').style.backgroundImage=`url(${bgs[tIdx][0]})`;
+      });
+    }
+
+    // ─── Spectral Flux Onset + Visual Flash ────────────────────────
+    function detectOnset(){
+      const data=new Uint8Array(analyser.frequencyBinCount);
+      analyser.getByteFrequencyData(data);
+
+      let flux=0;
+      if(window.prevSpec){
+        for(let i=0;i<data.length;i++){
+          flux+=Math.max(data[i]-window.prevSpec[i],0);
+        }
+      }
+      window.prevSpec=data.slice();
+
+      fluxHist.push(flux);
+      if(fluxHist.length>32)fluxHist.shift();
+
+      const avg=fluxHist.reduce((a,b)=>a+b,0)/fluxHist.length;
+      const std=Math.sqrt(fluxHist.reduce((a,b)=>a+(b-avg)**2,0)/fluxHist.length);
+      const thresh=avg+1.65*std;
+
+      const now=performance.now()/1000;
+      if(flux>thresh&&now-onsetTime>0.09){
+        onsetTime=now;
+        // Flash effect
+        document.body.style.background='#111';
+        setTimeout(()=>document.body.style.background='#000',90);
+        core.scale.setScalar(1.35); // strong pulse
+        setTimeout(()=>core.scale.setScalar(1),180);
+      }
+    }
+
+    // ─── Animation ─────────────────────────────────────────────────
+    let lt=0;
+    function loop(nt){
+      requestAnimationFrame(loop);
+      const dt=Math.min((nt-lt)/1000,0.1);lt=nt;
+
+      if(analyser){
+        detectOnset();
+        const data=new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(data);
+
+        let b=0,m=0,h=0,len=data.length;
+        for(let i=0;i<len;i++){
+          if(i<len*0.18)b+=data[i];
+          else if(i<len*0.55)m+=data[i];
+          else h+=data[i];
+        }
+        uniforms.bass.value=b/(len*0.18*255)||0;
+        uniforms.mid.value =m/(len*0.37*255)||0;
+        uniforms.high.value=h/(len*0.45*255)||0;
+      }
+
+      uniforms.t.value+=dt;
+      core.rotation.y+=dt*(0.1+uniforms.bass.value*0.35);
+
+      renderer.render(scene,camera);
+
+      // Simple vis canvas bars
+      visCtx.fillStyle='rgba(0,0,0,0.1)';
+      visCtx.fillRect(0,0,vis.width,vis.height);
+      const bw=vis.width/64;
+      for(let i=0;i<64;i++){
+        const v=(data[i*8]||0)/255;
+        visCtx.fillStyle=`hsl(\( {i*5.6},100%, \){60+v*40}%)`;
+        visCtx.fillRect(i*bw,vis.height-v*vis.height*0.7,bw-1,v*vis.height*0.7);
+      }
+    }
+    loop();
+
+    // ─── Controls ──────────────────────────────────────────────────
+    document.getElementById('play').onclick=()=>{if(audio)audio.paused?audio.play():audio.pause()};
+    document.getElementById('prev').onclick=()=>switchTrack(-1);
+    document.getElementById('next').onclick=()=>switchTrack(1);
+    document.getElementById('col').onclick=()=>{
+      const cs=['#ff0044','#00ff88','#ff00ff','#00ffff','#ffff00','#ff8800','#8800ff'];
+      document.documentElement.style.setProperty('--p',cs[Math.floor(Math.random()*cs.length)]);
+    };
+
+    // Initial
+    document.getElementById('bg').style.backgroundImage=`url(${bgs[0][0]})`;
+    document.getElementById('play').onclick=()=>{switchTrack(0)};
+  </script>
+</body>
+</html>
