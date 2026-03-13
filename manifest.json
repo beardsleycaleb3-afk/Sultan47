@@ -1,0 +1,35 @@
+{
+  "name": "Sultan47",
+  "short_name": "Sultan47",
+  "description": "Beat-reactive 3D visualizer with orbiting mini cores, transparent main sphere & full offline PWA",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#111111",
+  "background_color": "#000000",
+  "id": "sultan47-visualizer",
+  "lang": "en",
+  "categories": ["entertainment", "music", "visualizer"],
+  "icons": [
+    {
+      "src": "/icon-192.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Play Track 1",
+      "url": "/?track=0",
+      "description": "Start with 👻"
+    }
+  ]
+}
