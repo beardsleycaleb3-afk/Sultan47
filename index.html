@@ -372,8 +372,35 @@
         uniforms.tex.value = loader.load('assets/core/a.jpg');
         scene.background = loader.load('assets/bg/1.jpg');
         spawnMiniCores(8);
+
+
+        (function() {
+  const installBtn = document.getElementById('install-button');
+  let deferredPrompt;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
+
+  if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          document.getElementById('splash-layer').style.display = 'none';
+        }
+        deferredPrompt = null;
+      }
+    });
+  }
+})();
+
     </script>
 
+
+   
     <script>
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
     </script>
