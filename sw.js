@@ -4,7 +4,7 @@ const CACHE_NAME = 'sultan47-v4';
 const PRECACHE_FILES = [
   '/', '/index.html', '/manifest.json',
   '/icon-192.jpg', '/icon-512.jpg',
-  'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.180.0/three.min.js',
 
   // === AUDIO ===
   '1.mp3', '2.mp3', '3.mp3', '4.mp3', '5.mp3',
