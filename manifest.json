@@ -1,7 +1,7 @@
 {
   "name": "Sultan47",
   "short_name": "Sultan47",
-  "description": "Beat-reactive 3D visualizer with orbiting mini cores, transparent main sphere & full offline PWA",
+  "description": "Beat-reactive 3D visualizer with orbiting mini cores, transparent main sphere & full offline PWA.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -27,9 +27,10 @@
   ],
   "shortcuts": [
     {
-      "name": "Play Track 1",
+      "name": "Play Track 0",
+      "short_name": "Track 🔥",
       "url": "/?track=0",
-      "description": "Start with 👻"
+      "description": "Start with default vibe"
     }
   ]
 }
