@@ -4,101 +4,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <meta name="theme-color" content="#111111">
+    <meta name="background-color" content="#000000">
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="manifest" href="manifest.json">
     <title>Sultan47</title>
     <style>
     :root { --black: #000000; --white: #ffffff; }
 
-    body { margin:0; padding:0; background:#000; overflow:hidden; touch-action:none; font-family: monospace; }
-
+    body { margin:0; padding:0; background:#000; overflow:hidden; touch-action:none; font-family:monospace; }
     #app { height:100vh; display:flex; flex-direction:column; position:relative; }
-
     #frame {
-        position: relative; flex-grow: 1;
-        border: 20px double #ff0044;
-        border-radius: 6px;
-        box-shadow: inset 0 0 40px rgba(255,255,255,0.15);
-        overflow: hidden; background: #000;
-        transition: border-color 0.4s ease;
-        touch-action: none;
+        position:relative; flex-grow:1;
+        border:20px double #ff0044; border-radius:6px;
+        box-shadow:inset 0 0 40px rgba(255,255,255,0.15);
+        overflow:hidden; background:#000;
+        transition:border-color 0.4s ease;
+        touch-action:none;
     }
-
-    canvas { display:block; width:100%; height:100%; touch-action: none; }
+    canvas { display:block; width:100%; height:100%; touch-action:none; }
 
     #ui {
-        height: 110px; display:flex; justify-content:space-around; align-items:center; flex-wrap:wrap; gap:4px;
-        padding:8px 0; background:rgba(10,10,10,0.95); border-top:2px solid #8a2be2;
-        box-shadow:0 -20px 30px #8a2be2;
+        height:160px; display:flex; flex-direction:column; justify-content:center; align-items:center;
+        background:rgba(10,10,10,0.95); border-top:2px solid #8a2be2;
+        box-shadow:0 -20px 30px #8a2be2; padding:12px 0; gap:12px;
+        border: 4px double #444; border-radius:12px 12px 0 0;
     }
-
+    .button-row {
+        display:flex; justify-content:space-around; width:100%; max-width:420px; gap:10px; padding:0 16px;
+    }
     .b {
-        width: 48px; height: 48px;
-        border-radius: 50%;
-        background: #0a0a0a;
-        color: #fff;
-        font-size: 24px;
-        cursor: pointer;
-        transition: all 0.35s ease;
-        box-shadow: 0 0 20px currentColor, inset 0 0 14px rgba(0,0,0,0.9);
-        position: relative;
-        border: 1px double transparent;
-        touch-action: manipulation;
+        width:60px; height:60px; border-radius:50%;
+        background:#0a0a0a; color:#fff; font-size:16px; line-height:60px; text-align:center;
+        transition:all 0.35s ease; box-shadow:0 0 20px currentColor, inset 0 0 14px rgba(0,0,0,0.9);
+        position:relative; border:1px double transparent; touch-action:manipulation;
     }
-
     .b::before {
-        content: '';
-        position: absolute;
-        inset: -8px;
-        border-radius: 50%;
-        border: 4px double transparent;
-        pointer-events: none;
-        opacity: 0.7;
+        content:''; position:absolute; inset:-8px; border-radius:50%;
+        border:4px double transparent; pointer-events:none; opacity:0.7;
     }
-
-    #btn0 { color: #c8102e; border-color: #c8102e; }
-    #btn1 { color: #39ff14; border-color: #39ff14; }
-    #btn2 { color: #89cff0; border-color: #89cff0; }
-    #btn3 { color: #ffef00; border-color: #ffef00; }
-    #btn4 { color: #b026ff; border-color: #b026ff; }
-    #btnColor { color: #ffffff; border-color: #ffffff; }
-    #btnInstall { color: #00ffff; border-color: #00ffff; }
-
     .b.active {
-        transform: scale(1.25) rotate(1deg);
-        box-shadow: 0 0 50px 35px currentColor, inset 0 0 25px currentColor !important;
+        transform:scale(1.25) rotate(1deg);
+        box-shadow:0 0 50px 35px currentColor, inset 0 0 25px currentColor !important;
     }
+    .b.active::before { opacity:1; animation:buttonPulse 1.4s infinite; }
+    @keyframes buttonPulse { 0%,100% { transform:scale(1); opacity:0.8; } 50% { transform:scale(1.12); opacity:1; } }
 
-    .b.active::before { opacity: 1; animation: buttonPulse 1.4s infinite; }
+    #btn0 { color:#c8102e; border-color:#c8102e; }
+    #btn1 { color:#39ff14; border-color:#39ff14; }
+    #btn2 { color:#89cff0; border-color:#89cff0; }
+    #btn3 { color:#ffef00; border-color:#ffef00; }
+    #btn4 { color:#b026ff; border-color:#b026ff; }
+    #btnColor { color:#ffffff; border-color:#ffffff; }
+    #btnInstall { color:#00ffff; border-color:#00ffff; }
 
-    @keyframes buttonPulse {
-        0%,100% { transform: scale(1); opacity: 0.8; }
-        50%     { transform: scale(1.12); opacity: 1; }
+    /* ────────────────────────────────────────────────
+       SMOOTH SPLASH FADE-OUT
+    ──────────────────────────────────────────────── */
+    #splash-layer {
+        background:url('assets/bg/111.jpg') center/cover;
+        position:fixed; inset:0; z-index:9999;
+        display:flex; align-items:center; justify-content:center;
+        transition: opacity 1.4s ease-out, transform 1.4s ease-out;
+        opacity:1;
+        transform: translateY(0) scale(1);
+        pointer-events:auto;
+    }
+    #splash-layer.fade-out {
+        opacity:0;
+        transform: translateY(-30%) scale(0.92);
+        pointer-events:none;
     }
     </style>
 </head>
 <body>
-    <div id="splash-layer" style="background: url('assets/bg/111.jpg') center/cover; position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center;">
-      <button id="install-button">🦫</button>
+    <div id="splash-layer">
+      <button id="install-button">🦫 Install</button>
     </div>
 
     <div id="app">
-        <div id="frame">
-            <canvas id="canvas"></canvas>
-        </div>
+        <div id="frame"><canvas id="canvas"></canvas></div>
 
         <div id="ui">
-            <button class="b active" id="btn0">👻</button>
-            <button class="b" id="btn1">🌶️</button>
-            <button class="b" id="btn2">🤯</button>
-            <button class="b" id="btn3">👑</button>
-            <button class="b" id="btn4">😎</button>
-            <button class="b" id="btnColor">🌈</button>
-            <button class="b" id="btnInstall">📥</button>
+            <div class="button-row">
+                <button class="b active" id="btn0">👻</button>
+                <button class="b" id="btn1">🌶️</button>
+                <button class="b" id="btn2">🤯</button>
+                <button class="b" id="btn3">👑</button>
+                <button class="b" id="btn4">😎</button>
+            </div>
+            <div class="button-row">
+                <button class="b" id="btnColor">🌈</button>
+                <button class="b" id="btnInstall">📥</button>
+            </div>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.180.0/three.min.js"></script>
 
     <script id="vShader" type="x-shader/x-vertex">
         varying vec2 vUv; varying float vDist; uniform float time;
@@ -110,6 +111,7 @@
             gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
         }
     </script>
+
     <script id="fShader" type="x-shader/x-fragment">
         uniform float time; uniform float glow; uniform float bass; uniform float mid; uniform float high; 
         uniform sampler2D tex; varying vec2 vUv; varying float vDist;
@@ -158,13 +160,13 @@
         const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.2;
-        renderer.setSize(window.innerWidth, window.innerHeight - 110);
+        renderer.setSize(window.innerWidth, window.innerHeight - 160);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x000000);
 
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.innerHeight - 110), 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.innerHeight - 160), 0.1, 1000);
         camera.position.z = 70;
 
         const loader = new THREE.TextureLoader();
@@ -233,7 +235,6 @@
             analyser = audioContext.createAnalyser();
             analyser.fftSize = 1024;
             analyser.smoothingTimeConstant = 0.65;
-            analyser.connect(audioContext.destination);
         }
 
         function updateAudio() {
@@ -280,7 +281,7 @@
             currentAudio.crossOrigin = "anonymous";
             const source = audioContext.createMediaElementSource(currentAudio);
             source.connect(analyser);
-            currentAudio.play().catch(e => console.log("Audio play failed:", e));
+            currentAudio.play().catch(() => {});
 
             currentStep = 0;
             uniforms.tex.value = loader.load(corePaths[idx][0]);
@@ -314,12 +315,16 @@
                 deferredPrompt.prompt();
                 deferredPrompt.userChoice.then(({ outcome }) => {
                     if (outcome === 'accepted') {
-                        document.getElementById('splash-layer').style.display = 'none';
+                        const splash = document.getElementById('splash-layer');
+                        if (splash) {
+                            splash.classList.add('fade-out');
+                            setTimeout(() => splash.remove(), 1600);
+                        }
                     }
                     deferredPrompt = null;
                 });
             } else {
-                alert("Tap again in a second or refresh — install prompt is ready!");
+                alert("Tap again or refresh — install ready!");
             }
         }
 
@@ -328,8 +333,13 @@
             deferredPrompt = e;
         });
 
+        // Auto-fade if already installed
         if (window.matchMedia('(display-mode: standalone)').matches) {
-            document.getElementById('splash-layer').style.display = 'none';
+            const splash = document.getElementById('splash-layer');
+            if (splash) {
+                splash.classList.add('fade-out');
+                setTimeout(() => splash.remove(), 1600);
+            }
         }
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -366,23 +376,14 @@
         }
 
         window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / (window.innerHeight - 110);
+            camera.aspect = window.innerWidth / (window.innerHeight - 160);
             camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight - 110);
+            renderer.setSize(window.innerWidth, window.innerHeight - 160);
         });
 
-        // ────────────────────────────────────────────────
-        // TOUCH-FRIENDLY INTERACTIONS (Android mobile optimized)
-        // ────────────────────────────────────────────────
-
         const frame = document.getElementById('frame');
+        frame.addEventListener('pointerdown', () => spawnMiniCores(6), { passive: true });
 
-        // Canvas tap → spawn burst
-        frame.addEventListener('pointerdown', () => {
-            spawnMiniCores(6);
-        }, { passive: true });
-
-        // Button tap handler helper
         function addButtonTap(id, action) {
             const el = document.getElementById(id);
             if (!el) return;
@@ -391,9 +392,7 @@
                 action();
                 el.classList.add('active');
             }, { passive: false });
-            el.addEventListener('pointerup', () => el.classList.remove('active'));
-            el.addEventListener('pointercancel', () => el.classList.remove('active'));
-            el.addEventListener('pointerleave', () => el.classList.remove('active'));
+            el.addEventListener('pointerup pointercancel pointerleave', () => el.classList.remove('active'));
         }
 
         addButtonTap('btn0', () => cycle(0));
@@ -404,11 +403,8 @@
         addButtonTap('btnColor', cycleBorder);
         addButtonTap('btnInstall', installPWA);
 
-        // Splash install button
         const splashBtn = document.getElementById('install-button');
-        if (splashBtn) {
-            addButtonTap('install-button', installPWA);
-        }
+        if (splashBtn) addButtonTap('install-button', installPWA);
 
         // Startup
         uniforms.tex.value = loader.load('assets/core/a.jpg');
@@ -416,14 +412,12 @@
         spawnMiniCores(8);
         animate();
 
-        setTimeout(() => {
-            cycle(initialTrack);
-        }, 800);
+        setTimeout(() => cycle(initialTrack), 800);
 
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
-                .then(() => console.log('Service Worker registered'))
-                .catch(err => console.log('Service Worker registration failed:', err));
+            navigator.serviceWorker.register('sw.js', { scope: '/' })
+                .then(reg => console.log('Service Worker registered'))
+                .catch(err => console.error('Service Worker failed', err));
         }
     </script>
 </body>
