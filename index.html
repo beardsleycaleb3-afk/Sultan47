@@ -61,7 +61,7 @@
        SMOOTH SPLASH FADE-OUT
     ──────────────────────────────────────────────── */
     #splash-layer {
-        background:url('assets/bg/111.jpg') center/cover;
+        background:url('assets/bg/333.jpg') center/cover;
         position:fixed; inset:0; z-index:9999;
         display:flex; align-items:center; justify-content:center;
         transition: opacity 1.4s ease-out, transform 1.4s ease-out;
@@ -77,11 +77,12 @@
     </style>
 </head>
 <body>
+    <div></div>
     <div id="splash-layer">
       <button id="install-button">🦫 Install</button>
-    </div>
-
-    <div id="app">
+        <div></div>
+    
+        <div id="app">
         <div id="frame"><canvas id="canvas"></canvas></div>
 
         <div id="ui">
@@ -91,10 +92,8 @@
                 <button class="b" id="btn2">🤯</button>
                 <button class="b" id="btn3">👑</button>
                 <button class="b" id="btn4">😎</button>
-            </div>
-            <div class="button-row">
                 <button class="b" id="btnColor">🌈</button>
-                <button class="b" id="btnInstall">📥</button>
+                
             </div>
         </div>
     </div>
