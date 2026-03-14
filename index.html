@@ -400,7 +400,7 @@
         addButtonTap('btn3', () => cycle(3));
         addButtonTap('btn4', () => cycle(4));
         addButtonTap('btnColor', cycleBorder);
-        addButtonTap('btnInstall', installPWA);
+    
 
         const splashBtn = document.getElementById('install-button');
         if (splashBtn) addButtonTap('install-button', installPWA);
@@ -412,12 +412,12 @@
         animate();
 
         setTimeout(() => cycle(initialTrack), 800);
-
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js', { scope: '/' })
-                .then(reg => console.log('Service Worker registered'))
-                .catch(err => console.error('Service Worker failed', err));
-        }
+//
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/Sultan47/sw.js', { scope: '/Sultan47/' })
+        .then(reg => console.log('Service Worker registered'))
+        .catch(err => console.error('Service Worker failed', err));
+}
     </script>
 </body>
 </html>
